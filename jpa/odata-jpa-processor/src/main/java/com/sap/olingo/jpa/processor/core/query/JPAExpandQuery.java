@@ -159,7 +159,7 @@ public final class JPAExpandQuery extends JPAExecutableQuery {
       final CriteriaQuery<Tuple> countQuery = cb.createTupleQuery();
       final List<Selection<?>> selectionPath = buildExpandJoinPath();
       final Map<String, From<?, ?>> joinTables = createFromClause(new ArrayList<JPAAssociationAttribute>(0),
-          new ArrayList<>(0));
+          new ArrayList<JPAPath>(0));
 
       Expression<Long> count = cb.count(root);
       count.alias("$count");

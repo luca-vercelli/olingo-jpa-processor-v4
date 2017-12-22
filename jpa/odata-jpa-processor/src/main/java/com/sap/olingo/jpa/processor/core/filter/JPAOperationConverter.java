@@ -77,7 +77,7 @@ public class JPAOperationConverter {
       return dbConverter.convert(jpaOperator);
     }
   }
-
+/*
   @SuppressWarnings({ "unchecked" })
   public final Expression<Boolean> convert(@SuppressWarnings("rawtypes") final JPAComparisonOperatorImp jpaOperator)
       throws ODataApplicationException {
@@ -99,6 +99,106 @@ public class JPAOperationConverter {
     case LE:
       return comparisonExpression((l, r) -> (cb.lessThanOrEqualTo(l, r)), (l, r) -> (cb.lessThanOrEqualTo(l, r)),
           jpaOperator);
+    default:
+      return dbConverter.convert(jpaOperator);
+    }
+  }
+*/
+
+  @SuppressWarnings({ "unchecked" })
+  public final Expression<Boolean> convert(@SuppressWarnings("rawtypes") final JPAComparisonOperatorImp jpaOperator)
+      throws ODataApplicationException {
+
+	//Backported to Java7 - Quite ugly
+	BiFunction<Expression<?>, Expression<?>, Expression<Boolean>> f1;
+    BiFunction<Expression<?>, Object, Expression<Boolean>> f2;
+    Function<Expression<?>, Expression<Boolean>> f3;
+	BiFunction<Expression<? extends Comparable>, Expression<? extends Comparable>, Expression<Boolean>> g1;
+    BiFunction<Expression<? extends Comparable>, Comparable, Expression<Boolean>> g2;
+	
+    switch (jpaOperator.getOperator()) {
+    case EQ:
+	  f1 = new BiFunction<Expression<?>,Expression<?>,Expression<Boolean>>(){
+		  public Expression<Boolean> apply(Expression<?> l, Expression<?> r) {
+			return cb.equal(l, r);
+		  }
+	  };
+	  f2 = new BiFunction<Expression<?>,Object,Expression<Boolean>>(){
+		  public Expression<Boolean> apply(Expression<?> l, Object r) {
+			return cb.equal(l, r);
+		  }
+	  };
+	  f3 = new Function<Expression<?>, Expression<Boolean>>(){
+		  public Expression<Boolean> apply(Expression<?> l) {
+			return cb.isNull(l);
+		  }
+	  };
+      return equalExpression(f1, f2, f3, jpaOperator);
+    case NE:
+	  f1 = new BiFunction<Expression<?>,Expression<?>,Expression<Boolean>>(){
+		  public Expression<Boolean> apply(Expression<?> l, Expression<?> r) {
+			return cb.notEqual(l, r);
+		  }
+	  };
+	  f2 = new BiFunction<Expression<?>,Object,Expression<Boolean>>(){
+		  public Expression<Boolean> apply(Expression<?> l, Object r) {
+			return cb.notEqual(l, r);
+		  }
+	  };
+	  f3 = new Function<Expression<?>, Expression<Boolean>>(){
+		  public Expression<Boolean> apply(Expression<?> l) {
+			return cb.isNotNull(l);
+		  }
+	  };
+      return equalExpression(f1, f2, f3, jpaOperator);
+    case GE:
+       g1 = new BiFunction<Expression<? extends Comparable>,Expression<? extends Comparable>,Expression<Boolean>>(){
+		  public Expression<Boolean> apply(Expression<? extends Comparable> l, Expression<? extends Comparable> r) {
+			return cb.greaterThanOrEqualTo(l, r);
+		  }
+	  };
+	  g2 = new BiFunction<Expression<? extends Comparable>,Comparable,Expression<Boolean>>(){
+		  public Expression<Boolean> apply(Expression<? extends Comparable> l, Comparable r) {
+			return cb.greaterThanOrEqualTo(l, r);
+		  }
+	  };
+	  return comparisonExpression(g1, g2, jpaOperator);
+    case GT:
+       g1 = new BiFunction<Expression<? extends Comparable>,Expression<? extends Comparable>,Expression<Boolean>>(){
+		  public Expression<Boolean> apply(Expression<? extends Comparable> l, Expression<? extends Comparable> r) {
+			return cb.greaterThan(l, r);
+		  }
+	  };
+	  g2 = new BiFunction<Expression<? extends Comparable>,Comparable,Expression<Boolean>>(){
+		  public Expression<Boolean> apply(Expression<? extends Comparable> l, Comparable r) {
+			return cb.greaterThan(l, r);
+		  }
+	  };
+      return comparisonExpression(g1, g2, jpaOperator);
+    case LT:
+       g1 = new BiFunction<Expression<? extends Comparable>,Expression<? extends Comparable>,Expression<Boolean>>(){
+		  public Expression<Boolean> apply(Expression<? extends Comparable> l, Expression<? extends Comparable> r) {
+			return cb.lessThan(l, r);
+		  }
+	  };
+	  g2 = new BiFunction<Expression<? extends Comparable>,Comparable,Expression<Boolean>>(){
+		  public Expression<Boolean> apply(Expression<? extends Comparable> l, Comparable r) {
+			return cb.lessThan(l, r);
+		  }
+	  };
+      return comparisonExpression(g1, g2, jpaOperator);
+    case LE:
+       g1 = new BiFunction<Expression<? extends Comparable>,Expression<? extends Comparable>,Expression<Boolean>>(){
+		  public Expression<Boolean> apply(Expression<? extends Comparable> l, Expression<? extends Comparable> r) {
+			return cb.lessThanOrEqualTo(l, r);
+		  }
+	  };
+	  g2 = new BiFunction<Expression<? extends Comparable>,Comparable,Expression<Boolean>>(){
+		  public Expression<Boolean> apply(Expression<? extends Comparable> l, Comparable r) {
+			return cb.lessThanOrEqualTo(l, r);
+		  }
+	  };
+      return comparisonExpression(g1, g2, jpaOperator);
     default:
       return dbConverter.convert(jpaOperator);
     }
